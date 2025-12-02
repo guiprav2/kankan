@@ -63,7 +63,8 @@ export default class App {
   persistBoards() {
     localStorage.setItem(BOARDS_KEY, JSON.stringify(this.state.boards));
   }
-  async ensureBoardSession(boardId) {
+  async ensureBoardSession(boardId, options = {}) {
+    let { seedDefaults = false } = options || {};
     if (!boardId) return null;
     if (this.sessions.has(boardId)) return this.sessions.get(boardId);
     let board = this.state.boards.find(x => x.id === boardId);
@@ -73,7 +74,7 @@ export default class App {
     let networkOrigin = Symbol(`board:${boardId}`);
     let session = { boardId, doc, persistence, networkOrigin, peers: new Set(), ready: null };
     session.ready = persistence.whenSynced.then(async () => {
-      await this.initializeDoc(doc);
+      if (seedDefaults) await this.initializeDoc(doc);
       this.refreshBoardState(boardId);
     });
     let broadcastUpdate = update => {
@@ -268,6 +269,18 @@ export default class App {
     let columns = doc.getArray('columns').toArray();
     return columns.find(col => col.get('id') === columnId) || null;
   }
+  removeColumn(doc, columnId) {
+    if (!doc || !columnId) return false;
+    let columns = doc.getArray('columns');
+    let list = columns.toArray();
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].get('id') === columnId) {
+        columns.delete(i, 1);
+        return true;
+      }
+    }
+    return false;
+  }
   findCard(doc, columnId, cardId) {
     if (!columnId || !cardId) return null;
     let columns = doc.getArray('columns').toArray();
@@ -306,6 +319,7 @@ export default class App {
       if (!this.state.boards.length) {
         await this.actions.createBoard();
       }
+      setInterval(() => d.update(), 5000);
     },
     createBoard: async () => {
       let [btn, name] = await showModal('PromptDialog', {
@@ -325,7 +339,7 @@ export default class App {
       this.state.selectedBoardId = board.id;
       this.state.boardReady = false;
       this.clearBoardState();
-      await this.ensureBoardSession(board.id);
+      await this.ensureBoardSession(board.id, { seedDefaults: true });
       this.state.boardStatus = 'ready';
     },
     selectBoard: async id => {
@@ -389,6 +403,23 @@ export default class App {
       let shareUrl = this.buildBoardJoinUrl(targetId);
       if (!shareUrl) return;
       await navigator.clipboard.writeText(shareUrl);
+    },
+    deleteColumn: async columnId => {
+      if (!columnId) return;
+      let session = await this.ensureBoardSelected();
+      if (!session) return;
+      let column = this.getColumnMap(session.doc, columnId);
+      if (!column) return;
+      let columnName = column.get('name') || 'Untitled Column';
+      let [btn] = await showModal('ConfirmationDialog', {
+        title: `Delete column`,
+        message: `Delete "${columnName}" and all cards inside it? This cannot be undone.`,
+        confirmLabel: 'Delete column',
+      });
+      if (btn !== 'ok') return;
+      session.doc.transact(() => {
+        this.removeColumn(session.doc, columnId);
+      });
     },
     newCard: async columnId => {
       let session = await this.ensureBoardSelected();

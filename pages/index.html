@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Kanban</title>
+    <title></title>
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1"
@@ -46,7 +46,7 @@
           >
             <div class="flex flex-col gap-3 items-end">
               <div
-                class="w-64 rounded-2xl backdrop-blur border shadow-xl border-white/20 bg-neutral-950/40"
+                class="w-64 rounded-2xl backdrop-blur border shadow-xl border-white/20 bg-neutral-950/40 overflow-hidden"
               >
                 <div
                   class="px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/70"
@@ -93,57 +93,83 @@
                   </li>
                 </ul>
                 <button
-                  class="w-full px-4 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 rounded-b-2xl transition"
+                  class="w-full px-4 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition"
                   type="button"
                   wf-onclick="post('app.createBoard')"
                   value=""
                 >
-                  Create new board
+                  Create new board</button
+                ><button
+                  class="w-full px-4 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition"
+                  type="button"
+                  wf-onclick="post('app.createBoard')"
+                  value=""
+                  wf-if="top !== window"
+                >
+                  Join board
                 </button>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="flex gap-6 items-start" wf-if="state.app.boardReady">
-        <div
-          class="bg-white/90 rounded-lg shadow-xl flex flex-col w-72"
-          wf-map="column of state.app.columns"
-        >
-          <div class="border-b border-slate-100 space-y-3 px-6 pt-4">
-            <p class="text-lg font-semibold text-slate-900">{{column.name}}</p>
-          </div>
-          <div class="flex-1 p-4 flex flex-col gap-3">
-            <div
-              class="bg-white rounded-xl border border-slate-100 shadow-inner p-3 space-y-2 cursor-pointer hover:shadow"
-              wf-map="card of column.cards"
-              wf-onclick="post('app.viewCard', column.id, card.id)"
-            >
-              <p class="text-sm font-medium text-slate-900">{{card.title}}</p>
-              <p
-                class="text-xs text-slate-500"
-                wf-if="card.description?.trim?.()"
-              >
-                {{card.description}}
-              </p>
-              <div class="flex items-center gap-2 text-xs text-slate-500">
-                <span
-                  class="inline-flex px-2 py-1 rounded-full bg-blue-50 text-blue-600"
-                  wf-if="card.tag"
-                  >{{card.tag}}</span
+      <div
+        class="flex gap-6 items-start overflow-x-auto"
+        wf-if="state.app.boardReady"
+      >
+        <div class="w-max flex gap-4">
+          <div
+            class="bg-white/90 rounded-lg shadow-xl flex flex-col w-72 group"
+            wf-map="column of state.app.columns"
+          >
+            <div class="border-b border-slate-100 px-6 pt-4 pb-2">
+              <div class="flex items-start justify-between gap-3">
+                <p class="text-lg font-semibold text-slate-900">
+                  {{column.name}}
+                </p>
+                <button
+                  type="button"
+                  class="text-slate-400 hover:text-rose-500 transition-opacity opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:opacity-100"
+                  wf-onclick="post('app.deleteColumn', column.id)"
+                  title="Delete column"
+                  value=""
                 >
-                <span>{{card.ageLabel || ''}}</span>
+                  <span class="nf nf-oct-x text-base"></span>
+                </button>
               </div>
             </div>
+            <div class="flex-1 p-4 flex flex-col gap-3">
+              <div
+                class="bg-white rounded-xl border border-slate-100 shadow-inner p-3 space-y-2 cursor-pointer hover:shadow"
+                wf-map="card of column.cards"
+                wf-onclick="post('app.viewCard', column.id, card.id)"
+              >
+                <p class="text-sm font-medium text-slate-900">{{card.title}}</p>
+                <p
+                  class="text-xs text-slate-500"
+                  wf-if="card.description?.trim?.()"
+                >
+                  {{card.description}}
+                </p>
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                  <span
+                    class="inline-flex px-2 py-1 rounded-full bg-blue-50 text-blue-600"
+                    wf-if="card.tag"
+                    >{{card.tag}}</span
+                  >
+                  <span>{{card.ageLabel || ''}}</span>
+                </div>
+              </div>
+            </div>
+            <button
+              class="mx-4 mb-4 px-4 py-2 rounded-lg border border-blue-400 text-blue-600 font-medium text-sm hover:bg-blue-50 transition"
+              type="button"
+              wf-onclick="post('app.newCard', column.id)"
+              value=""
+            >
+              Add Card
+            </button>
           </div>
-          <button
-            class="mx-4 mb-4 px-4 py-2 rounded-lg border border-blue-400 text-blue-600 font-medium text-sm hover:bg-blue-50 transition"
-            type="button"
-            wf-onclick="post('app.newCard', column.id)"
-            value=""
-          >
-            Add Card
-          </button>
         </div>
       </div>
     </div>
