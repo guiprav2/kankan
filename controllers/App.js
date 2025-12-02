@@ -216,17 +216,7 @@ export default class App {
     return `${seconds}s`;
   }
   buildBoardJoinUrl(boardId) {
-    if (!boardId) return '';
-    try {
-      if (typeof location === 'undefined') return boardId;
-      let shareUrl = new URL(location.href);
-      shareUrl.search = '';
-      shareUrl.hash = '';
-      shareUrl.searchParams.set('joinBoard', boardId);
-      return shareUrl.toString();
-    } catch {
-      return boardId;
-    }
+    return boardId ? `https://kankan-demo.netlify.app/?joinBoard=${boardId}` : '';
   }
   consumeJoinBoardParam() {
     try {
