@@ -55,7 +55,12 @@ export default class App {
     if (!Array.isArray(stored)) stored = [];
     stored = stored
       .filter(x => x && x.id)
-      .map(x => ({ id: x.id, name: (x.name || 'Untitled Board').trim() || 'Untitled Board', createdAt: x.createdAt || Date.now() }));
+      .map(x => ({
+        id: x.id,
+        name: (x.name || 'Untitled Board').trim() || 'Untitled Board',
+        createdAt: x.createdAt || Date.now(),
+        placeholder: Boolean(x.placeholder),
+      }));
     stored.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
     this.state.boards = stored;
     if (!this.state.selectedBoardId && stored[0]) this.state.selectedBoardId = stored[0].id;
@@ -76,6 +81,8 @@ export default class App {
     session.ready = persistence.whenSynced.then(async () => {
       if (seedDefaults) await this.initializeDoc(doc);
       this.refreshBoardState(boardId);
+      this.seedBoardDocNameFromLocal(boardId);
+      this.syncBoardNameFromDoc(boardId);
     });
     let broadcastUpdate = update => {
       if (!session.sendUpdate || !update?.length) return;
@@ -85,6 +92,7 @@ export default class App {
     };
     doc.on('update', (update, origin) => {
       this.refreshBoardState(boardId);
+      this.syncBoardNameFromDoc(boardId);
       if (origin === networkOrigin) return;
       broadcastUpdate(update);
     });
@@ -126,6 +134,7 @@ export default class App {
       let decoded = decodeBinary(update);
       if (!decoded?.length) return;
       Y.applyUpdate(session.doc, decoded, session.networkOrigin);
+      d.update();
     });
     pushVector();
   }
@@ -147,6 +156,7 @@ export default class App {
     if (this.state.selectedBoardId !== boardId) return;
     let session = this.sessions.get(boardId);
     if (!session) return;
+    this.syncBoardNameFromDoc(boardId);
     let columns = session.doc.getArray('columns').toArray().map(col => ({
       id: col.get('id'),
       name: col.get('name') || 'Untitled Column',
@@ -161,6 +171,7 @@ export default class App {
       })),
     }));
     this.state.columns = columns;
+    this.updateCardAgeLabels();
     this.updateBoardSummary(boardId, columns);
     this.state.boardReady = true;
     this.updatePeerCount(boardId);
@@ -192,6 +203,63 @@ export default class App {
     let summaries = { ...this.state.boardSummaries };
     summaries[boardId] = summary;
     this.state.boardSummaries = summaries;
+  }
+  updateCardAgeLabels() {
+    let columns = this.state.columns;
+    if (!Array.isArray(columns) || !columns.length) return false;
+    let mutated = false;
+    for (let column of columns) {
+      let cards = Array.isArray(column.cards) ? column.cards : [];
+      for (let card of cards) {
+        let nextLabel = this.getCardAgeLabel(card.createdAt);
+        if (card.ageLabel !== nextLabel) {
+          card.ageLabel = nextLabel;
+          mutated = true;
+        }
+      }
+    }
+    return mutated;
+  }
+  async updateBoardDocName(boardId, name) {
+    let id = (boardId || '').trim();
+    let boardName = (name || '').trim();
+    if (!id || !boardName) return;
+    let session = await this.ensureBoardSession(id);
+    if (session?.ready) await session.ready;
+    if (!session?.doc) return;
+    session.doc.transact(() => {
+      let meta = session.doc.getMap('meta');
+      meta.set('name', boardName);
+    });
+  }
+  syncBoardNameFromDoc(boardId) {
+    if (!boardId) return;
+    let session = this.sessions.get(boardId);
+    if (!session?.doc) return;
+    let meta = session.doc.getMap('meta');
+    let docName = (meta?.get('name') || '').trim();
+    if (!docName) return;
+    let entry = this.state.boards.find(x => x.id === boardId);
+    if (!entry || entry.name === docName) return;
+    entry.name = docName;
+    entry.placeholder = false;
+    this.state.boards.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+    this.persistBoards();
+  }
+  seedBoardDocNameFromLocal(boardId) {
+    if (!boardId) return;
+    let entry = this.state.boards.find(x => x.id === boardId);
+    if (!entry || entry.placeholder) return;
+    let session = this.sessions.get(boardId);
+    if (!session?.doc) return;
+    let meta = session.doc.getMap('meta');
+    let docName = (meta?.get('name') || '').trim();
+    if (docName) return;
+    let boardName = (entry.name || '').trim();
+    if (!boardName) return;
+    session.doc.transact(() => {
+      meta.set('name', boardName);
+    });
   }
   getCardAgeLabel(timestamp) {
     if (!timestamp) return '';
@@ -242,7 +310,7 @@ export default class App {
     if (!board) {
       let shortId = id.slice(0, 6) || id;
       let placeholderName = shortId ? `Shared Board (${shortId})` : 'Shared Board';
-      board = { id, name: placeholderName, createdAt: Date.now() };
+      board = { id, name: placeholderName, createdAt: Date.now(), placeholder: true };
       this.state.boards.push(board);
       this.state.boards.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
       this.persistBoards();
@@ -309,7 +377,10 @@ export default class App {
       if (!this.state.boards.length) {
         await this.actions.createBoard();
       }
-      setInterval(() => d.update(), 5000);
+      setInterval(() => {
+        this.updateCardAgeLabels();
+        d.update();
+      }, 5000);
     },
     createBoard: async () => {
       let [btn, name] = await showModal('PromptDialog', {
@@ -322,7 +393,12 @@ export default class App {
         if (!this.state.boards.length) this.state.boardStatus = 'empty';
         return;
       }
-      let board = { id: crypto.randomUUID(), name: name.trim() || 'Untitled Board', createdAt: Date.now() };
+      let board = {
+        id: crypto.randomUUID(),
+        name: name.trim() || 'Untitled Board',
+        createdAt: Date.now(),
+        placeholder: false,
+      };
       this.state.boards.push(board);
       this.state.boards.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
       this.persistBoards();
@@ -330,6 +406,7 @@ export default class App {
       this.state.boardReady = false;
       this.clearBoardState();
       await this.ensureBoardSession(board.id, { seedDefaults: true });
+      await this.updateBoardDocName(board.id, board.name);
       this.state.boardStatus = 'ready';
     },
     selectBoard: async id => {
@@ -349,8 +426,10 @@ export default class App {
       });
       if (btn !== 'ok') return;
       board.name = name.trim() || board.name;
+      board.placeholder = false;
       this.state.boards.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
       this.persistBoards();
+      await this.updateBoardDocName(board.id, board.name);
     },
     deleteBoard: async board => {
       if (!board) return;
