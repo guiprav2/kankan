@@ -1,0 +1,263 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Kanban</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <script>
+      window.rootPrefix = /^\/(files|preview)\//.test(location.pathname)
+        ? location.pathname.split('/').slice(0, 4).join('/')
+        : '/';
+    </script>
+    <script type="module" src="../webfoundry/ifdesigner.js"></script>
+    <script src="../webfoundry/head.js"></script>
+  </head>
+  <body
+    class="flex flex-col [&amp;&gt;div:first-child]:flex-1 min-h-screen"
+    style="display: none"
+  >
+    <div
+      class="min-h-screen bg-gradient-to-br from-slate-950 via-blue-900 to-slate-900 text-white p-8 flex flex-col gap-6"
+      wf-onattach="post('app.init')"
+      wf-controller="app"
+    >
+      <div></div>
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <h1 class="text-3xl font-semibold tracking-wide">Kanban</h1>
+        </div>
+        <div class="flex-1 h-px bg-white/40 min-h-0!"></div>
+
+        <div class="relative group">
+          <button
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/30 text-white text-sm font-medium tracking-wide hover:border-white/60 hover:bg-white/10 transition"
+            value=""
+          >
+            <span>Product Launch</span>
+            <span class="nf nf-md-menu_down text-base"></span>
+          </button>
+          <div
+            class="absolute top-full right-0 pt-3 bg-transparent hidden group-hover:block"
+          >
+            <div
+              class="w-64 rounded-2xl bg-white/10 backdrop-blur border border-white/20 shadow-xl"
+            >
+              <div
+                class="px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/70"
+              >
+                Boards
+              </div>
+              <ul class="px-2 pb-2 space-y-2">
+                <li
+                  class="group flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-white/10 transition"
+                >
+                  <div>
+                    <p class="text-sm font-semibold text-white">
+                      Product Launch
+                    </p>
+                    <p class="text-xs text-white/70">8 cards</p>
+                  </div>
+                  <div
+                    class="inline-flex items-center gap-2 text-lg text-white/70 opacity-0 transition group-hover:opacity-100"
+                  >
+                    <span
+                      class="nf nf-md-content_copy cursor-pointer hover:text-white"
+                    ></span>
+                    <span
+                      class="nf nf-md-pencil cursor-pointer hover:text-white"
+                    ></span>
+                    <span
+                      class="nf nf-md-delete cursor-pointer hover:text-rose-200"
+                    ></span>
+                  </div>
+                </li>
+                <li
+                  class="group flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-white/10 transition"
+                >
+                  <div>
+                    <p class="text-sm font-semibold text-white">
+                      Growth Experiments
+                    </p>
+                    <p class="text-xs text-white/70">5 cards</p>
+                  </div>
+                  <div
+                    class="inline-flex items-center gap-2 text-lg text-white/70 opacity-0 transition group-hover:opacity-100"
+                  >
+                    <span
+                      class="nf nf-md-content_copy cursor-pointer hover:text-white"
+                    ></span>
+                    <span
+                      class="nf nf-md-pencil cursor-pointer hover:text-white"
+                    ></span>
+                    <span
+                      class="nf nf-md-delete cursor-pointer hover:text-rose-200"
+                    ></span>
+                  </div>
+                </li>
+                <li
+                  class="group flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-white/10 transition"
+                >
+                  <div>
+                    <p class="text-sm font-semibold text-white">
+                      Design Backlog
+                    </p>
+                    <p class="text-xs text-white/70">12 cards</p>
+                  </div>
+                  <div
+                    class="inline-flex items-center gap-2 text-lg text-white/70 opacity-0 transition group-hover:opacity-100"
+                  >
+                    <span
+                      class="nf nf-md-content_copy cursor-pointer hover:text-white"
+                    ></span>
+                    <span
+                      class="nf nf-md-pencil cursor-pointer hover:text-white"
+                    ></span>
+                    <span
+                      class="nf nf-md-delete cursor-pointer hover:text-rose-200"
+                    ></span>
+                  </div>
+                </li>
+              </ul>
+              <button
+                class="w-full px-4 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 rounded-b-2xl transition"
+                value=""
+              >
+                Create new board
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
+          class="absolute top-full right-0 mt-2 w-64 rounded-2xl bg-white/10 backdrop-blur border border-white/20 shadow-xl hidden group-hover:block"
+        >
+          <div
+            class="px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/70"
+          >
+            Boards
+          </div>
+          <ul class="px-2 pb-2 space-y-2">
+            <li
+              class="group flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-white/10 transition"
+            >
+              <div>
+                <p class="text-sm font-semibold text-white">Product Launch</p>
+                <p class="text-xs text-white/70">8 members</p>
+              </div>
+              <div
+                class="inline-flex items-center gap-2 text-lg text-white/70 opacity-0 group-hover:opacity-100 transition"
+              >
+                <span
+                  class="nf nf-md-content_copy hover:text-white cursor-pointer"
+                ></span>
+                <span
+                  class="nf nf-md-pencil hover:text-white cursor-pointer"
+                ></span>
+                <span
+                  class="nf nf-md-delete hover:text-rose-200 cursor-pointer"
+                ></span>
+              </div>
+            </li>
+            <li
+              class="group flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-white/10 transition"
+            >
+              <div>
+                <p class="text-sm font-semibold text-white">
+                  Growth Experiments
+                </p>
+                <p class="text-xs text-white/70">5 members</p>
+              </div>
+              <div
+                class="inline-flex items-center gap-2 text-lg text-white/70 opacity-0 group-hover:opacity-100 transition"
+              >
+                <span
+                  class="nf nf-md-content_copy hover:text-white cursor-pointer"
+                ></span>
+                <span
+                  class="nf nf-md-pencil hover:text-white cursor-pointer"
+                ></span>
+                <span
+                  class="nf nf-md-delete hover:text-rose-200 cursor-pointer"
+                ></span>
+              </div>
+            </li>
+            <li
+              class="group flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-white/10 transition"
+            >
+              <div>
+                <p class="text-sm font-semibold text-white">Design Backlog</p>
+                <p class="text-xs text-white/70">12 members</p>
+              </div>
+              <div
+                class="inline-flex items-center gap-2 text-lg text-white/70 opacity-0 group-hover:opacity-100 transition"
+              >
+                <span
+                  class="nf nf-md-content_copy hover:text-white cursor-pointer"
+                ></span>
+                <span
+                  class="nf nf-md-pencil hover:text-white cursor-pointer"
+                ></span>
+                <span
+                  class="nf nf-md-delete hover:text-rose-200 cursor-pointer"
+                ></span>
+              </div>
+            </li>
+          </ul>
+          <button
+            class="w-full px-4 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 rounded-b-2xl transition"
+            value=""
+          >
+            Create new board
+          </button>
+        </div>
+      </div>
+      <div class="flex gap-6 items-start">
+        <div class="bg-white/90 rounded-lg shadow-xl flex flex-col w-72">
+          <div class="p-6 border-b border-slate-100 space-y-3 pb-0">
+            <p class="text-lg font-semibold text-slate-900">Sprint 12 Focus</p>
+          </div>
+          <div class="flex-1 p-4 flex flex-col gap-3">
+            <div
+              class="bg-white rounded-xl border border-slate-100 shadow-inner p-3 space-y-2"
+            >
+              <p class="text-sm font-medium text-slate-900">
+                Integrate payment gateway
+              </p>
+              <p class="text-xs text-slate-500">Blocked by security review.</p>
+              <div class="flex items-center gap-2 text-xs text-slate-500">
+                <span
+                  class="inline-flex px-2 py-1 rounded-full bg-blue-50 text-blue-600"
+                  >Backend</span
+                >
+                <span>2d</span>
+              </div>
+            </div>
+            <div
+              class="bg-white rounded-xl border border-slate-100 shadow-inner p-3 space-y-2"
+            >
+              <p class="text-sm font-medium text-slate-900">
+                Polish onboarding walkthrough
+              </p>
+              <p class="text-xs text-slate-500">Waiting on copy feedback.</p>
+              <div class="flex items-center gap-2 text-xs text-slate-500">
+                <span
+                  class="inline-flex px-2 py-1 rounded-full bg-blue-50 text-blue-600"
+                  >UX</span
+                >
+                <span>1d</span>
+              </div>
+            </div>
+          </div>
+          <button
+            class="mx-4 mb-4 px-4 py-2 rounded-lg border border-blue-400 text-blue-600 font-medium text-sm hover:bg-blue-50 transition"
+            value=""
+          >
+            Add Card
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
