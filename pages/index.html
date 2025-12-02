@@ -24,234 +24,122 @@
       wf-onattach="post('app.init')"
       wf-controller="app"
     >
-      <div></div>
       <div class="flex items-center gap-4">
         <div class="flex items-center gap-2">
-          <h1 class="text-3xl font-semibold tracking-wide">Kanban</h1>
+          <h1 class="text-3xl font-semibold tracking-wide">Kankan</h1>
         </div>
         <div class="flex-1 h-px bg-white/40 min-h-0!"></div>
 
         <div class="relative group">
           <button
             class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/30 text-white text-sm font-medium tracking-wide hover:border-white/60 hover:bg-white/10 transition"
+            type="button"
             value=""
           >
-            <span>Product Launch</span>
+            <span class="truncate max-w-32"
+              >{{state.app.activeBoard?.name || 'Select Board'}}</span
+            >
             <span class="nf nf-md-menu_down text-base"></span>
           </button>
           <div
             class="absolute top-full right-0 pt-3 bg-transparent hidden group-hover:block"
           >
-            <div
-              class="w-64 rounded-2xl bg-white/10 backdrop-blur border border-white/20 shadow-xl"
-            >
+            <div class="flex flex-col gap-3 items-end">
               <div
-                class="px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/70"
+                class="w-64 rounded-2xl backdrop-blur border shadow-xl border-white/20 bg-neutral-950/40"
               >
-                Boards
+                <div
+                  class="px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/70"
+                >
+                  Boards
+                </div>
+                <ul
+                  class="px-2 pb-2 space-y-2"
+                  wf-map="board of state.app.boards"
+                >
+                  <li
+                    class="flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-white/10 transition hover:[&amp;&gt;div:last-child]:opacity-100"
+                  >
+                    <div
+                      class="flex-1 cursor-pointer"
+                      wf-onclick="post('app.selectBoard', board.id)"
+                    >
+                      <p
+                        class="text-sm font-semibold text-white truncate max-w-32"
+                      >
+                        {{board.name}}
+                      </p>
+                      <p class="text-xs text-white/70 truncate max-w-32 mt-1">
+                        {{((state.app.boardPeers[board.id] != null ? state.app.boardPeers[board.id] : 0) + 1)}} members
+                        online
+                      </p>
+                    </div>
+                    <div
+                      class="items-center gap-2 text-lg text-white/70 opacity-0 transition inline-flex"
+                    >
+                      <span
+                        class="nf nf-md-content_copy hover:text-white cursor-pointer"
+                        wf-onclick="post('app.copyBoardLink', board.id)"
+                      ></span>
+                      <span
+                        class="nf nf-md-pencil hover:text-white cursor-pointer"
+                        wf-onclick="post('app.renameBoard', board)"
+                      ></span>
+                      <span
+                        class="nf nf-md-delete hover:text-rose-200 cursor-pointer"
+                        wf-onclick="post('app.deleteBoard', board)"
+                      ></span>
+                    </div>
+                  </li>
+                </ul>
+                <button
+                  class="w-full px-4 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 rounded-b-2xl transition"
+                  type="button"
+                  wf-onclick="post('app.createBoard')"
+                  value=""
+                >
+                  Create new board
+                </button>
               </div>
-              <ul class="px-2 pb-2 space-y-2">
-                <li
-                  class="group flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-white/10 transition"
-                >
-                  <div>
-                    <p class="text-sm font-semibold text-white">
-                      Product Launch
-                    </p>
-                    <p class="text-xs text-white/70">8 cards</p>
-                  </div>
-                  <div
-                    class="inline-flex items-center gap-2 text-lg text-white/70 opacity-0 transition group-hover:opacity-100"
-                  >
-                    <span
-                      class="nf nf-md-content_copy cursor-pointer hover:text-white"
-                    ></span>
-                    <span
-                      class="nf nf-md-pencil cursor-pointer hover:text-white"
-                    ></span>
-                    <span
-                      class="nf nf-md-delete cursor-pointer hover:text-rose-200"
-                    ></span>
-                  </div>
-                </li>
-                <li
-                  class="group flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-white/10 transition"
-                >
-                  <div>
-                    <p class="text-sm font-semibold text-white">
-                      Growth Experiments
-                    </p>
-                    <p class="text-xs text-white/70">5 cards</p>
-                  </div>
-                  <div
-                    class="inline-flex items-center gap-2 text-lg text-white/70 opacity-0 transition group-hover:opacity-100"
-                  >
-                    <span
-                      class="nf nf-md-content_copy cursor-pointer hover:text-white"
-                    ></span>
-                    <span
-                      class="nf nf-md-pencil cursor-pointer hover:text-white"
-                    ></span>
-                    <span
-                      class="nf nf-md-delete cursor-pointer hover:text-rose-200"
-                    ></span>
-                  </div>
-                </li>
-                <li
-                  class="group flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-white/10 transition"
-                >
-                  <div>
-                    <p class="text-sm font-semibold text-white">
-                      Design Backlog
-                    </p>
-                    <p class="text-xs text-white/70">12 cards</p>
-                  </div>
-                  <div
-                    class="inline-flex items-center gap-2 text-lg text-white/70 opacity-0 transition group-hover:opacity-100"
-                  >
-                    <span
-                      class="nf nf-md-content_copy cursor-pointer hover:text-white"
-                    ></span>
-                    <span
-                      class="nf nf-md-pencil cursor-pointer hover:text-white"
-                    ></span>
-                    <span
-                      class="nf nf-md-delete cursor-pointer hover:text-rose-200"
-                    ></span>
-                  </div>
-                </li>
-              </ul>
-              <button
-                class="w-full px-4 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 rounded-b-2xl transition"
-                value=""
-              >
-                Create new board
-              </button>
             </div>
           </div>
         </div>
-        <div
-          class="absolute top-full right-0 mt-2 w-64 rounded-2xl bg-white/10 backdrop-blur border border-white/20 shadow-xl hidden group-hover:block"
-        >
-          <div
-            class="px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/70"
-          >
-            Boards
-          </div>
-          <ul class="px-2 pb-2 space-y-2">
-            <li
-              class="group flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-white/10 transition"
-            >
-              <div>
-                <p class="text-sm font-semibold text-white">Product Launch</p>
-                <p class="text-xs text-white/70">8 members</p>
-              </div>
-              <div
-                class="inline-flex items-center gap-2 text-lg text-white/70 opacity-0 group-hover:opacity-100 transition"
-              >
-                <span
-                  class="nf nf-md-content_copy hover:text-white cursor-pointer"
-                ></span>
-                <span
-                  class="nf nf-md-pencil hover:text-white cursor-pointer"
-                ></span>
-                <span
-                  class="nf nf-md-delete hover:text-rose-200 cursor-pointer"
-                ></span>
-              </div>
-            </li>
-            <li
-              class="group flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-white/10 transition"
-            >
-              <div>
-                <p class="text-sm font-semibold text-white">
-                  Growth Experiments
-                </p>
-                <p class="text-xs text-white/70">5 members</p>
-              </div>
-              <div
-                class="inline-flex items-center gap-2 text-lg text-white/70 opacity-0 group-hover:opacity-100 transition"
-              >
-                <span
-                  class="nf nf-md-content_copy hover:text-white cursor-pointer"
-                ></span>
-                <span
-                  class="nf nf-md-pencil hover:text-white cursor-pointer"
-                ></span>
-                <span
-                  class="nf nf-md-delete hover:text-rose-200 cursor-pointer"
-                ></span>
-              </div>
-            </li>
-            <li
-              class="group flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-white/10 transition"
-            >
-              <div>
-                <p class="text-sm font-semibold text-white">Design Backlog</p>
-                <p class="text-xs text-white/70">12 members</p>
-              </div>
-              <div
-                class="inline-flex items-center gap-2 text-lg text-white/70 opacity-0 group-hover:opacity-100 transition"
-              >
-                <span
-                  class="nf nf-md-content_copy hover:text-white cursor-pointer"
-                ></span>
-                <span
-                  class="nf nf-md-pencil hover:text-white cursor-pointer"
-                ></span>
-                <span
-                  class="nf nf-md-delete hover:text-rose-200 cursor-pointer"
-                ></span>
-              </div>
-            </li>
-          </ul>
-          <button
-            class="w-full px-4 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 rounded-b-2xl transition"
-            value=""
-          >
-            Create new board
-          </button>
-        </div>
       </div>
-      <div class="flex gap-6 items-start">
-        <div class="bg-white/90 rounded-lg shadow-xl flex flex-col w-72">
-          <div class="p-6 border-b border-slate-100 space-y-3 pb-0">
-            <p class="text-lg font-semibold text-slate-900">Sprint 12 Focus</p>
+      <div class="flex gap-6 items-start" wf-if="state.app.boardReady">
+        <div
+          class="bg-white/90 rounded-lg shadow-xl flex flex-col w-72"
+          wf-map="column of state.app.columns"
+        >
+          <div class="border-b border-slate-100 space-y-3 px-6 pt-4">
+            <p class="text-lg font-semibold text-slate-900">{{column.name}}</p>
           </div>
           <div class="flex-1 p-4 flex flex-col gap-3">
             <div
-              class="bg-white rounded-xl border border-slate-100 shadow-inner p-3 space-y-2"
+              class="bg-white rounded-xl border border-slate-100 shadow-inner p-3 space-y-2 cursor-pointer hover:shadow"
+              wf-map="card of column.cards"
+              wf-onclick="post('app.viewCard', column.id, card.id)"
             >
-              <p class="text-sm font-medium text-slate-900">
-                Integrate payment gateway
+              <p class="text-sm font-medium text-slate-900">{{card.title}}</p>
+              <p
+                class="text-xs text-slate-500"
+                wf-if="card.description?.trim?.()"
+              >
+                {{card.description}}
               </p>
-              <p class="text-xs text-slate-500">Blocked by security review.</p>
               <div class="flex items-center gap-2 text-xs text-slate-500">
                 <span
                   class="inline-flex px-2 py-1 rounded-full bg-blue-50 text-blue-600"
-                  >Backend</span
+                  wf-if="card.tag"
+                  >{{card.tag}}</span
                 >
-                <span>2d</span>
-              </div>
-            </div>
-            <div
-              class="bg-white rounded-xl border border-slate-100 shadow-inner p-3 space-y-2"
-            >
-              <p class="text-sm font-medium text-slate-900">
-                Polish onboarding walkthrough
-              </p>
-              <p class="text-xs text-slate-500">Waiting on copy feedback.</p>
-              <div class="flex items-center gap-2 text-xs text-slate-500">
-                <span
-                  class="inline-flex px-2 py-1 rounded-full bg-blue-50 text-blue-600"
-                  >UX</span
-                >
-                <span>1d</span>
+                <span>{{card.ageLabel || ''}}</span>
               </div>
             </div>
           </div>
           <button
             class="mx-4 mb-4 px-4 py-2 rounded-lg border border-blue-400 text-blue-600 font-medium text-sm hover:bg-blue-50 transition"
+            type="button"
+            wf-onclick="post('app.newCard', column.id)"
             value=""
           >
             Add Card

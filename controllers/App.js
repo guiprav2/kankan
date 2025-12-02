@@ -39,6 +39,8 @@ export default class App {
     peerCount: 0,
     showBoardMenu: false,
     boardStatus: 'idle',
+    boardSummaries: {},
+    boardPeers: {},
     get activeBoard() {
       return this.boards.find(x => x.id === this.selectedBoardId) || null;
     },
@@ -154,9 +156,11 @@ export default class App {
         tag: card.get('tag') || '',
         columnId: col.get('id'),
         createdAt: card.get('createdAt') || null,
+        ageLabel: this.getCardAgeLabel(card.get('createdAt')),
       })),
     }));
     this.state.columns = columns;
+    this.updateBoardSummary(boardId, columns);
     this.state.boardReady = true;
     this.updatePeerCount(boardId);
   }
@@ -169,6 +173,95 @@ export default class App {
     if (this.state.selectedBoardId !== boardId) return;
     let session = this.sessions.get(boardId);
     this.state.peerCount = session ? session.peers.size : 0;
+    let peers = { ...this.state.boardPeers };
+    peers[boardId] = this.state.peerCount;
+    this.state.boardPeers = peers;
+  }
+  updateBoardSummary(boardId, columns) {
+    if (!boardId) return;
+    let columnList = Array.isArray(columns) ? columns : [];
+    let cardCount = columnList.reduce((total, column) => {
+      let cards = Array.isArray(column.cards) ? column.cards : [];
+      return total + cards.length;
+    }, 0);
+    let summary = {
+      columnCount: columnList.length,
+      cardCount,
+    };
+    let summaries = { ...this.state.boardSummaries };
+    summaries[boardId] = summary;
+    this.state.boardSummaries = summaries;
+  }
+  getCardAgeLabel(timestamp) {
+    if (!timestamp) return '';
+    let delta = Date.now() - timestamp;
+    if (!Number.isFinite(delta) || delta < 0) delta = 0;
+    let minute = 60 * 1000;
+    let hour = 60 * minute;
+    let day = 24 * hour;
+    if (delta >= day) {
+      let days = Math.max(1, Math.round(delta / day));
+      return `${days}d`;
+    }
+    if (delta >= hour) {
+      let hours = Math.max(1, Math.round(delta / hour));
+      return `${hours}h`;
+    }
+    if (delta >= minute) {
+      let minutes = Math.max(1, Math.round(delta / minute));
+      return `${minutes}m`;
+    }
+    let seconds = Math.max(1, Math.round(delta / 1000));
+    return `${seconds}s`;
+  }
+  buildBoardJoinUrl(boardId) {
+    if (!boardId) return '';
+    try {
+      if (typeof location === 'undefined') return boardId;
+      let shareUrl = new URL(location.href);
+      shareUrl.search = '';
+      shareUrl.hash = '';
+      shareUrl.searchParams.set('joinBoard', boardId);
+      return shareUrl.toString();
+    } catch {
+      return boardId;
+    }
+  }
+  consumeJoinBoardParam() {
+    try {
+      if (typeof location === 'undefined') return null;
+      let url = new URL(location.href);
+      let value = (url.searchParams.get('joinBoard') || '').trim();
+      if (!value) return null;
+      url.searchParams.delete('joinBoard');
+      if (typeof history !== 'undefined' && history.replaceState) {
+        let nextUrl = `${url.pathname}${url.search}${url.hash}`;
+        let title = typeof document !== 'undefined' ? document.title : '';
+        history.replaceState(history.state, title, nextUrl);
+      }
+      return value;
+    } catch {
+      return null;
+    }
+  }
+  async joinBoardById(boardId) {
+    let id = (boardId || '').trim();
+    if (!id) return false;
+    let board = this.state.boards.find(entry => entry.id === id);
+    if (!board) {
+      let shortId = id.slice(0, 6) || id;
+      let placeholderName = shortId ? `Shared Board (${shortId})` : 'Shared Board';
+      board = { id, name: placeholderName, createdAt: Date.now() };
+      this.state.boards.push(board);
+      this.state.boards.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+      this.persistBoards();
+    }
+    this.state.selectedBoardId = id;
+    this.clearBoardState();
+    let session = await this.ensureBoardSession(id);
+    if (!session) return false;
+    this.state.boardStatus = 'ready';
+    return true;
   }
   getColumnMap(doc, columnId) {
     if (!columnId) return null;
@@ -199,7 +292,12 @@ export default class App {
   }
   actions = {
     init: async () => {
+      let joinBoardId = this.consumeJoinBoardParam();
       this.loadBoards();
+      if (joinBoardId) {
+        let joined = await this.joinBoardById(joinBoardId);
+        if (joined) return;
+      }
       this.state.boardStatus = this.state.boards.length ? 'ready' : 'empty';
       if (this.state.selectedBoardId) {
         this.state.boardReady = false;
@@ -271,13 +369,26 @@ export default class App {
         this.clearBoardState();
         await this.ensureBoardSelected();
       }
+      let summaries = { ...this.state.boardSummaries };
+      if (board.id in summaries) {
+        delete summaries[board.id];
+        this.state.boardSummaries = summaries;
+      }
+      let peers = { ...this.state.boardPeers };
+      if (board.id in peers) {
+        delete peers[board.id];
+        this.state.boardPeers = peers;
+      }
       this.persistBoards();
       if (!this.state.boards.length) this.state.boardStatus = 'empty';
       if (!this.state.selectedBoardId) this.clearBoardState();
     },
-    copyBoardLink: async () => {
-      if (!this.state.selectedBoardId) return;
-      await navigator.clipboard.writeText(this.state.selectedBoardId);
+    copyBoardLink: async boardId => {
+      let targetId = boardId || this.state.selectedBoardId;
+      if (!targetId) return;
+      let shareUrl = this.buildBoardJoinUrl(targetId);
+      if (!shareUrl) return;
+      await navigator.clipboard.writeText(shareUrl);
     },
     newCard: async columnId => {
       let session = await this.ensureBoardSelected();
