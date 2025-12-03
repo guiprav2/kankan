@@ -47,6 +47,7 @@
             <div class="flex flex-col gap-3 items-end">
               <div
                 class="w-64 rounded-2xl backdrop-blur border shadow-xl border-white/20 overflow-hidden bg-neutral-950/60"
+                tabindex="-1"
               >
                 <div
                   class="px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/70"
@@ -58,7 +59,7 @@
                   wf-map="board of state.app.boards"
                 >
                   <li
-                    class="flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-white/10 transition hover:[&amp;&gt;div:last-child]:opacity-100"
+                    class="flex items-center justify-between gap-2 px-3 py-2 rounded-xl hover:bg-white/10 transition hover:[&amp;&gt;div:last-child]:opacity-100 focus-within:[&amp;&gt;div:last-child]:opacity-100"
                   >
                     <div
                       class="flex-1 cursor-pointer"
