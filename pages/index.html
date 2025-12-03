@@ -42,7 +42,7 @@
             <span class="nf nf-md-menu_down text-base"></span>
           </button>
           <div
-            class="absolute top-full right-0 pt-3 bg-transparent hidden group-hover:block"
+            class="absolute top-full right-0 pt-3 bg-transparent hidden group-hover:block group-focus-within:block"
           >
             <div class="flex flex-col gap-3 items-end">
               <div
@@ -114,12 +114,12 @@
         </div>
       </div>
       <div
-        class="flex gap-6 items-start overflow-x-auto pb-8"
+        class="flex gap-6 pb-8 flex-1 overflow-auto flex-col sm:flex-row"
         wf-if="state.app.boardReady"
       >
-        <div class="w-max flex gap-4 items-start">
+        <div class="flex gap-4 items-start flex-col sm:flex-row w-full">
           <div
-            class="bg-white/90 rounded-lg shadow-xl flex flex-col w-72 group"
+            class="bg-white/90 rounded-lg shadow-xl flex flex-col group w-full sm:w-72 shrink-0"
             wf-map="column of state.app.columns"
           >
             <div class="border-b border-slate-100 px-6 pt-4 pb-2">
